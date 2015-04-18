@@ -64,9 +64,33 @@ typedef NS_ENUM(NSUInteger, AnimatingState) {
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.7f];
         self.separatorColor = [UIColor colorWithRed:181.0/255.0 green:181.0/255.0 blue:181.0/255.0 alpha:0];
         self.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero]; //Zero rect footer to clear empty rows UITableView draws
+        
+        UITapGestureRecognizer *gesture =
+        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapFrom:)];
+        // we need to set the gesture delegate so we can allow the tap to pass through to the
+        // UITableViewCell if necessary.
+        gesture.delegate = self;
+        [self addGestureRecognizer:gesture];
     }
     return self;
 }
+
+- (void)handleTapFrom:(UITapGestureRecognizer *)recognizer {
+    // exit from first item
+    [self dismisWithIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+}
+
+#pragma mark UIGestureRecognizerDelegate methods
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    // If the view that is touched is not the view associated with this view's table view, but
+    // is one of the sub-views, we should not recognize the touch.
+    if (touch.view != self && [touch.view isDescendantOfView:self] && ![touch.view isKindOfClass:NSClassFromString(@"UITableViewWrapperView")]) {
+        return NO;
+    }
+    
+    return YES;
+}
+
 
 #pragma mark - Show / Dismiss
 - (void)showInView:(UIView *)superview withEdgeInsets:(UIEdgeInsets)edgeInsets animated:(BOOL)animated {
